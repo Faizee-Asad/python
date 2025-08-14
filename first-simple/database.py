@@ -20,7 +20,6 @@ class Database:
         conn.commit()
         conn.close()
 
-        # Add sample data if empty
         if not self.get_products():
             self.add_product("Burger", 5.99)
             self.add_product("Pizza", 8.50)
@@ -40,3 +39,17 @@ class Database:
         products = c.fetchall()
         conn.close()
         return products
+
+    def update_product(self, product_id, name, price):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("UPDATE products SET name=?, price=? WHERE id=?", (name, price, product_id))
+        conn.commit()
+        conn.close()
+
+    def delete_product(self, product_id):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM products WHERE id=?", (product_id,))
+        conn.commit()
+        conn.close()

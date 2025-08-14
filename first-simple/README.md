@@ -18,7 +18,7 @@ my_gui_app/
 
 ```
 
-# 💡 For your restaurant POS practice project:
+# 💡 For your restaurant POS practice project: v1
 
 * main.py → Starts app
 * gui.py → Main window + admin window
@@ -27,8 +27,15 @@ my_gui_app/
 * utils.py → Helper for printing bills, formatting
 
 
-# Restaurant POS Demo (Tkinter + SQLite)
 
-## How to Run
-1. Install Python 3 (if not installed)
-2. Clone the repository:
+# v2
+
+# Restaurant POS (Tkinter + SQLite)
+
+## Features
+- Product list with prices
+- Add to cart & calculate total
+- Admin login (default: admin / 1234)
+- Add, Edit, Delete products in Admin Panel
+
+
