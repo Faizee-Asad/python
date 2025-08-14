@@ -7,8 +7,12 @@ class App(tk.Tk):
         self.title("POS System")
         self.geometry("800x700")
 
+        # Make window responsive
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
         container = tk.Frame(self)
-        container.pack(fill="both", expand=True)
+        container.grid(row=0, column=0, sticky="nsew")
 
         self.frames = {}
         for F in (MainPage, InventoryPage, TransactionPage, AnalysisPage):
@@ -19,8 +23,7 @@ class App(tk.Tk):
         self.show_frame(MainPage)
 
     def show_frame(self, page):
-        frame = self.frames[page]
-        frame.tkraise()
+        self.frames[page].tkraise()
 
 if __name__ == "__main__":
     app = App()
