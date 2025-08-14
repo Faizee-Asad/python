@@ -25,3 +25,10 @@ my_gui_app/
 * logic.py → Bill calculation, total, quantity handling
 * database.py → Load/add products from SQLite
 * utils.py → Helper for printing bills, formatting
+
+
+# Restaurant POS Demo (Tkinter + SQLite)
+
+## How to Run
+1. Install Python 3 (if not installed)
+2. Clone the repository:
