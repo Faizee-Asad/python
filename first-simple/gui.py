@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 from database import Database
 from logic import calculate_total
-from utils import format_currency
+from utils import format_currency, print_bill
+import os
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "1234"
@@ -12,22 +13,22 @@ class POSApp:
         self.db = Database("data/app.db")
         self.cart = []
 
+        # Ensure receipts folder exists
+        os.makedirs("data/receipts", exist_ok=True)
+
         self.root = tk.Tk()
         self.root.title("Restaurant POS - Demo")
         self.root.geometry("450x500")
 
-        # Title
         tk.Label(self.root, text="Restaurant POS", font=("Arial", 16, "bold")).pack(pady=10)
 
-        # Product List
         self.products_listbox = tk.Listbox(self.root, height=15)
         self.products_listbox.pack(pady=10, fill=tk.BOTH, expand=True)
 
         self.load_products()
 
-        # Buttons
         tk.Button(self.root, text="Add to Cart", command=self.add_to_cart).pack(pady=5)
-        tk.Button(self.root, text="Show Total", command=self.show_total).pack(pady=5)
+        tk.Button(self.root, text="Show Total & Print Bill", command=self.show_total).pack(pady=5)
         tk.Button(self.root, text="Admin Login", command=self.admin_login).pack(pady=10)
 
     def load_products(self):
@@ -47,8 +48,14 @@ class POSApp:
             messagebox.showwarning("No Selection", "Please select a product.")
 
     def show_total(self):
+        if not self.cart:
+            messagebox.showwarning("Cart Empty", "Please add some items first.")
+            return
+
         total = calculate_total(self.cart)
-        messagebox.showinfo("Total", f"Total Amount: {format_currency(total)}")
+        bill_path = print_bill(self.cart, total)  # Save bill
+        messagebox.showinfo("Total", f"Total Amount: {format_currency(total)}\nBill saved at:\n{bill_path}")
+        self.cart.clear()  # Clear cart after printing
 
     def admin_login(self):
         username = simpledialog.askstring("Admin Login", "Enter username:")
@@ -66,7 +73,6 @@ class POSApp:
 
         tk.Label(admin_win, text="Admin Panel", font=("Arial", 14, "bold")).pack(pady=10)
 
-        # Product List in Admin Panel
         admin_listbox = tk.Listbox(admin_win, height=10)
         admin_listbox.pack(pady=10, fill=tk.BOTH, expand=True)
 
@@ -118,7 +124,6 @@ class POSApp:
                 self.load_products()
                 messagebox.showinfo("Deleted", "Product deleted successfully.")
 
-        # Buttons for Admin
         tk.Button(admin_win, text="Add Product", command=add_product).pack(pady=5)
         tk.Button(admin_win, text="Edit Product", command=edit_product).pack(pady=5)
         tk.Button(admin_win, text="Delete Product", command=delete_product).pack(pady=5)
