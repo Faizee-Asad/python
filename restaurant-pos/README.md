@@ -38,3 +38,18 @@ restaurant-pos/
     └── logo.png
 
 ```
+
+## setup venv      
+* python -m venv venv
+* venv\Scripts\activate.bat
+* deactivate
+
+# V1 
+
+## 1 Scheme.sql
+## 2 db_manager.py
+## 3 constants.py
+## 4 login_window.py
+## 5 main_window.py
+## 6 main.py
+## run 
