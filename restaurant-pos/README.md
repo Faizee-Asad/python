@@ -71,4 +71,9 @@ restaurant-pos/
 ## 2 pos_app/database/db_manager.py
 ## 3 pos_app/gui/main_window.py
 ## run
+
+# v4 
+## 1 pos_app/utils/printer.py
+## 2 pos_app/logic/billing.py
+## 3 data/receipts/
 ```

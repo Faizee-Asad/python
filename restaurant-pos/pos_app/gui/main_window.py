@@ -5,6 +5,8 @@ from pos_app.logic.products import ProductService
 from pos_app.logic.billing import CartItem, calculate_totals
 from pos_app.database.db_manager import DBManager
 from pos_app.gui.admin_panel import AdminPanel
+from pos_app.logic.billing import CartItem, process_order
+
 
 
 class MainWindow:
@@ -213,21 +215,35 @@ class MainWindow:
         if not self.cart:
             messagebox.showinfo("Empty Cart", "No items in cart.")
             return
-        totals = calculate_totals(self.cart)
-        items_payload = [
-            {
-                "product_id": ci.product_id,
-                "qty": ci.qty,
-                "price": ci.price,
-                "line_total": ci.line_total,
-            }
-            for ci in self.cart
-        ]
+
         try:
-            order_id = self.db.create_order(total=totals["total"], items=items_payload)
+            # This now calculates totals, generates PDF, and optionally prints
+            result = process_order(self.cart, use_thermal=False)  # set True if using thermal
+
+            # Save order in DB
+            items_payload = [
+                {
+                    "product_id": ci.product_id,
+                    "qty": ci.qty,
+                    "price": ci.price,
+                    "line_total": ci.line_total,
+                }
+                for ci in self.cart
+            ]
+            order_id = self.db.create_order(total=result["total"], items=items_payload)
+
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to save order: {e}")
+            messagebox.showerror("Error", f"Failed to process order: {e}")
             return
 
+        # Clear the cart after success
         self._clear_cart()
-        messagebox.showinfo("Success", f"Order #{order_id} placed!\nTotal: {CURRENCY} {totals['total']:.2f}")
+
+        # Notify user
+        messagebox.showinfo(
+            "Success",
+            f"Order #{order_id} placed!\n"
+            f"Total: {CURRENCY} {result['total']:.2f}\n"
+            f"PDF saved at: {result['pdf']}"
+        )
+        

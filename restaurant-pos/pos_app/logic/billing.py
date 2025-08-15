@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Dict
 from pos_app.utils.constants import TAX_RATE
+from pos_app.utils.printer import generate_pdf_bill, print_thermal
 
 @dataclass
 class CartItem:
@@ -18,3 +19,34 @@ def calculate_totals(cart: List[CartItem]) -> Dict[str, float]:
     tax = round(subtotal * TAX_RATE, 2)
     total = round(subtotal + tax, 2)
     return {"subtotal": subtotal, "tax": tax, "total": total}
+
+def process_order(cart: List[CartItem], use_thermal: bool = False) -> Dict:
+    """Calculate totals, generate PDF, and optionally print thermal receipt."""
+    totals = calculate_totals(cart)
+
+    # Prepare items in tuple format for the printer
+    items_for_receipt = [(i.name, i.line_total) for i in cart]
+
+    # Generate PDF bill
+    pdf_path = generate_pdf_bill(
+        items_for_receipt,
+        totals["subtotal"],
+        totals["tax"],
+        totals["total"]
+    )
+
+    # Optionally print thermal
+    if use_thermal:
+        print_thermal(
+            items_for_receipt,
+            totals["subtotal"],
+            totals["tax"],
+            totals["total"]
+        )
+
+    return {
+        "subtotal": totals["subtotal"],
+        "tax": totals["tax"],
+        "total": totals["total"],
+        "pdf": pdf_path
+    }
