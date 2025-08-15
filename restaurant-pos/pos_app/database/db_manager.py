@@ -68,3 +68,23 @@ class DBManager:
         )
         self.conn.commit()
         return order_id
+
+    # ---------- Reports ----------
+    def daily_sales_between(self, date_from: str, date_to: str):
+        """
+        Returns rows like: {'d': 'YYYY-MM-DD', 'orders': int, 'revenue': float}
+        Inclusive between date_from and date_to.
+        """
+        sql = """
+        SELECT date(date) AS d,
+               COUNT(*) AS orders,
+               COALESCE(SUM(total), 0) AS revenue
+        FROM orders
+        WHERE datetime(date) >= datetime(?) AND datetime(date) <= datetime(? || ' 23:59:59')
+        GROUP BY date(date)
+        ORDER BY d ASC
+        """
+        rows = self.conn.execute(sql, (date_from, date_to)).fetchall()
+        # Convert sqlite3.Row -> dict for consistency
+        return [ {"d": r["d"], "orders": r["orders"], "revenue": float(r["revenue"])} for r in rows ]
+

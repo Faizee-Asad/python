@@ -4,12 +4,16 @@ from pos_app.utils.constants import APP_TITLE, WINDOW_SIZE, CURRENCY
 from pos_app.logic.products import ProductService
 from pos_app.logic.billing import CartItem, calculate_totals
 from pos_app.database.db_manager import DBManager
+from pos_app.gui.admin_panel import AdminPanel
+
 
 class MainWindow:
     def __init__(self, root):
         self.root = root
         self.root.title(APP_TITLE)
         self.root.geometry(WINDOW_SIZE)
+        self._build_menu()
+
 
         self.products_service = ProductService()
         self.db = DBManager()
@@ -17,6 +21,17 @@ class MainWindow:
 
         self._build_layout()
         self._load_products()
+    
+    def _build_menu(self):
+        menubar = tk.Menu(self.root)
+        admin_menu = tk.Menu(menubar, tearoff=0)
+        admin_menu.add_command(label="Open Admin Panel", command=self._open_admin)
+        menubar.add_cascade(label="Admin", menu=admin_menu)
+        self.root.config(menu=menubar)
+
+    def _open_admin(self):
+        AdminPanel(self.root)
+
 
     # ---------------- UI ----------------
     def _build_layout(self):
