@@ -53,3 +53,13 @@ restaurant-pos/
 ## 5 main_window.py
 ## 6 main.py
 ## run 
+
+# V1 
+
+## 1 pos_app/database/schema.sql
+## 2 pos_app/database/db_manager.py
+## 3 pos_app/logic/billing.py
+## 4 pos_app/logic/products.py
+## 5 pos_app/utils/constants.py
+## 6 pos_app/gui/main_window.py
+## run
