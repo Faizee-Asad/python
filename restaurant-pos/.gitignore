@@ -1,4 +1,4 @@
 dist
 build
 main.spec
-pos_app\__pycache__
+python\restaurant-pos\pos_app\__pycache__
