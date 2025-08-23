@@ -88,3 +88,46 @@ class DBManager:
         # Convert sqlite3.Row -> dict for consistency
         return [ {"d": r["d"], "orders": r["orders"], "revenue": float(r["revenue"])} for r in rows ]
 
+# # code help to generate exe file using pyisntaller
+# import os, sys
+
+# def resource_path(relative_path):
+#     """Get absolute path to resource, works for dev and for PyInstaller"""
+#     try:
+#         base_path = sys._MEIPASS  # temp folder when running as exe
+#     except Exception:
+#         base_path = os.path.abspath(".")
+#     return os.path.join(base_path, relative_path)
+
+# schema_path = resource_path("pos_app/database/schema.sql")
+
+# with open(schema_path, "r", encoding="utf-8") as f:
+#     schema_sql = f.read()
+
+
+# Fix: Store DB in a permanent location
+# Modify your db_manager.py so that the database path is set somewhere permanent.
+import os
+import sqlite3
+import sys
+
+# Permanent location: Same directory as the exe
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# If running as an exe, move up directories to avoid temp folder
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+
+DB_PATH = os.path.join(BASE_DIR, "pos_database.db")
+SCHEMA_FILE = os.path.join(BASE_DIR, "schema.sql")
+
+def create_tables():
+    if not os.path.exists(DB_PATH):
+        conn = sqlite3.connect(DB_PATH)
+        with open(SCHEMA_FILE, "r") as f:
+            conn.executescript(f.read())
+        conn.commit()
+        conn.close()
+
+def get_connection():
+    return sqlite3.connect(DB_PATH)
