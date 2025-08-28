@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant POS System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; /* slate-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; /* slate-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* slate-500 */
+        }
+        .table-available {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .table-occupied {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        }
+        /* Spinner for loading states */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #14b8a6; /* teal-500 */
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+
+    <!-- Main Container -->
+    <div id="app" class="h-screen w-screen overflow-hidden relative">
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="flex flex-col items-center justify-center h-full bg-slate-800">
+            <div class="text-center p-8 bg-slate-900 rounded-2xl shadow-2xl">
+                <svg class="mx-auto h-16 w-16 text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h1 class="text-4xl font-bold mt-4">Welcome Back</h1>
+                <p class="text-slate-400 mt-2">Please select your user profile to continue</p>
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button onclick="login('Jessica')" class="flex flex-col items-center space-y-2 p-4 bg-slate-800 rounded-lg hover:bg-teal-500 hover:scale-105 transition-all duration-200">
+                        <img src="https://placehold.co/80x80/14b8a6/ffffff?text=J" class="rounded-full" alt="User Jessica" onerror="this.onerror=null;this.src='https://placehold.co/80x80/14b8a6/ffffff?text=J';">
+                        <span class="font-semibold">Jessica</span>
+                    </button>
+                    <button onclick="login('David')" class="flex flex-col items-center space-y-2 p-4 bg-slate-800 rounded-lg hover:bg-teal-500 hover:scale-105 transition-all duration-200">
+                        <img src="https://placehold.co/80x80/0ea5e9/ffffff?text=D" class="rounded-full" alt="User David" onerror="this.onerror=null;this.src='https://placehold.co/80x80/0ea5e9/ffffff?text=D';">
+                        <span class="font-semibold">David</span>
+                    </button>
+                     <button onclick="login('Admin')" class="flex flex-col items-center space-y-2 p-4 bg-slate-800 rounded-lg hover:bg-red-500 hover:scale-105 transition-all duration-200">
+                        <img src="https://placehold.co/80x80/f43f5e/ffffff?text=A" class="rounded-full" alt="User Admin" onerror="this.onerror=null;this.src='https://placehold.co/80x80/f43f5e/ffffff?text=A';">
+                        <span class="font-semibold">Admin</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main POS Interface (hidden by default) -->
+        <div id="mainInterface" class="hidden h-full flex flex-col">
+            <!-- Header -->
+            <header class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 p-4 flex justify-between items-center flex-shrink-0">
+                <h1 class="text-2xl font-bold text-teal-400">DineDash POS</h1>
+                <div class="flex items-center space-x-4">
+                    <button id="generateSpecialsBtn" onclick="generateSpecials()" class="hidden bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                        ✨ Generate Daily Specials
+                    </button>
+                    <div class="text-right">
+                        <p id="currentUser" class="font-semibold">Jessica</p>
+                        <p id="currentUserRole" class="text-xs text-slate-400">Server</p>
+                    </div>
+                    <button onclick="logout()" class="p-2 rounded-full bg-slate-800 hover:bg-red-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Table Selection View -->
+            <div id="tableView" class="flex-grow p-6 overflow-y-auto">
+                 <h2 class="text-3xl font-bold mb-6">Floor Plan</h2>
+                 <div id="tableGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    <!-- Tables will be dynamically inserted here -->
+                 </div>
+            </div>
+
+            <!-- Order View -->
+            <div id="orderView" class="hidden flex-grow flex overflow-hidden">
+                <!-- Left Panel: Menu -->
+                <div class="w-2/3 flex flex-col p-6 bg-slate-800/50">
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="showTableView()" class="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                            <span>Back to Tables</span>
+                        </button>
+                        <h2 class="text-3xl font-bold">Table <span id="tableNumberDisplay"></span></h2>
+                    </div>
+                    <!-- Categories -->
+                    <div id="menuCategories" class="flex flex-wrap gap-2 mb-4">
+                        <!-- Categories will be dynamically inserted here -->
+                    </div>
+                    <!-- Menu Items -->
+                    <div id="menuItems" class="flex-grow overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pr-2">
+                        <!-- Menu items will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <!-- Right Panel: Order Summary -->
+                <div class="w-1/3 bg-slate-900 flex flex-col p-6 border-l border-slate-700">
+                    <h3 class="text-2xl font-bold mb-4">Current Order</h3>
+                    <div id="orderItems" class="flex-grow overflow-y-auto space-y-3 pr-2">
+                        <!-- Order items will be dynamically inserted here -->
+                        <p class="text-slate-500 text-center py-10">No items added yet.</p>
+                    </div>
+                    <div class="border-t border-slate-700 pt-4 mt-4 space-y-2">
+                         <button id="upsellBtn" onclick="getUpsellSuggestion()" class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg transition-colors mb-4" disabled>
+                            ✨ Suggest Pairing
+                        </button>
+                        <div class="space-y-2 text-lg">
+                            <div class="flex justify-between text-slate-300">
+                                <span>Subtotal</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span>Tax (10%)</span>
+                                <span id="tax">$0.00</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-2xl text-teal-400">
+                                <span>Total</span>
+                                <span id="total">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="paymentButton" class="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg mt-6 transition-colors text-xl" disabled>
+                        Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Specials Modal -->
+        <div id="specialsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+                <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-amber-400">✨ AI-Generated Daily Specials</h2>
+                    <button onclick="closeSpecialsModal()" class="p-2 rounded-full bg-slate-700 hover:bg-red-500 transition-colors">&times;</button>
+                </div>
+                <div id="specialsContent" class="p-6 overflow-y-auto">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Message Box -->
+        <div id="messageBox" class="hidden fixed bottom-5 right-5 bg-red-500 text-white py-3 px-5 rounded-lg shadow-lg z-50 animate-pulse">
+            <p id="messageText"></p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const loginScreen = document.getElementById('loginScreen');
+        const mainInterface = document.getElementById('mainInterface');
+        const tableView = document.getElementById('tableView');
+        const orderView = document.getElementById('orderView');
+        const tableGrid = document.getElementById('tableGrid');
+        const tableNumberDisplay = document.getElementById('tableNumberDisplay');
+        const menuCategoriesContainer = document.getElementById('menuCategories');
+        const menuItemsContainer = document.getElementById('menuItems');
+        const orderItemsContainer = document.getElementById('orderItems');
+        const subtotalEl = document.getElementById('subtotal');
+        const taxEl = document.getElementById('tax');
+        const totalEl = document.getElementById('total');
+        const paymentButton = document.getElementById('paymentButton');
+        const currentUserEl = document.getElementById('currentUser');
+        const currentUserRoleEl = document.getElementById('currentUserRole');
+        const generateSpecialsBtn = document.getElementById('generateSpecialsBtn');
+        const specialsModal = document.getElementById('specialsModal');
+        const specialsContent = document.getElementById('specialsContent');
+        const upsellBtn = document.getElementById('upsellBtn');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+
+        // --- Mock Data ---
+        const tables = [
+            { id: 1, name: 'T1', status: 'available', capacity: 2 }, { id: 2, name: 'T2', status: 'occupied', capacity: 4 },
+            { id: 3, name: 'T3', status: 'available', capacity: 4 }, { id: 4, name: 'T4', status: 'available', capacity: 6 },
+            { id: 5, name: 'P1', status: 'occupied', capacity: 8, type: 'patio' }, { id: 6, name: 'T5', status: 'available', capacity: 2 },
+            { id: 7, name: 'T6', status: 'available', capacity: 4 }, { id: 8, name: 'B1', status: 'occupied', capacity: 2, type: 'bar' },
+            { id: 9, name: 'B2', status: 'available', capacity: 2, type: 'bar' }, { id: 10, name: 'T7', status: 'available', capacity: 6 },
+            { id: 11, name: 'T8', status: 'available', capacity: 4 }, { id: 12, name: 'P2', status: 'available', capacity: 4, type: 'patio' },
+        ];
+        const menuCategories = [ { id: 'appetizers', name: 'Appetizers' }, { id: 'mains', name: 'Main Courses' }, { id: 'desserts', name: 'Desserts' }, { id: 'drinks', name: 'Drinks' }];
+        const menuItems = {
+            appetizers: [ { id: 101, name: 'Spring Rolls', price: 8.99 }, { id: 102, name: 'Garlic Bread', price: 6.50 }, { id: 103, name: 'Bruschetta', price: 9.25 }, { id: 104, name: 'Calamari', price: 12.75 }],
+            mains: [ { id: 201, name: 'Margherita Pizza', price: 15.99 }, { id: 202, name: 'Spaghetti Carbonara', price: 18.50 }, { id: 203, name: 'Grilled Salmon', price: 24.00 }, { id: 204, name: 'Ribeye Steak', price: 32.50 }, { id: 205, name: 'Veggie Burger', price: 14.75 }],
+            desserts: [ { id: 301, name: 'Tiramisu', price: 9.50 }, { id: 302, name: 'Chocolate Lava Cake', price: 10.00 }, { id: 303, name: 'Cheesecake', price: 8.75 }],
+            drinks: [ { id: 401, name: 'Coca-Cola', price: 3.50 }, { id: 402, name: 'Orange Juice', price: 4.00 }, { id: 403, name: 'Latte', price: 5.25 }, { id: 404, name: 'Sparkling Water', price: 3.00 }],
+        };
+        
+        // --- App State ---
+        let currentOrder = [];
+        let selectedTable = null;
+        let activeCategory = 'appetizers';
+
+        // --- Gemini API ---
+        const API_KEY = ""; // Leave empty, will be handled by the environment
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+        
+        async function callGemini(prompt, retries = 3, delay = 1000) {
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retries > 0) { // Throttling
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGemini(prompt, retries - 1, delay * 2); // Exponential backoff
+                    }
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Invalid response structure from API.");
+                }
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                showMessage(`Error: ${error.message}`);
+                return null;
+            }
+        }
+
+        // --- Functions ---
+        function login(userName) {
+            currentUserEl.textContent = userName;
+            loginScreen.classList.add('hidden');
+            mainInterface.classList.remove('hidden');
+            mainInterface.classList.add('flex');
+            
+            if (userName === 'Admin') {
+                currentUserRoleEl.textContent = 'Administrator';
+                generateSpecialsBtn.classList.remove('hidden');
+            } else {
+                currentUserRoleEl.textContent = 'Server';
+                generateSpecialsBtn.classList.add('hidden');
+            }
+            
+            showTableView();
+        }
+
+        function logout() {
+            loginScreen.classList.remove('hidden');
+            mainInterface.classList.add('hidden');
+            mainInterface.classList.remove('flex');
+            resetOrder();
+        }
+
+        function renderTables() {
+            tableGrid.innerHTML = '';
+            tables.forEach(table => {
+                const isAvailable = table.status === 'available';
+                const tableEl = document.createElement('button');
+                tableEl.className = `p-4 rounded-lg text-center transition-all duration-200 transform hover:scale-105 ${isAvailable ? 'bg-slate-800 border-2 border-teal-500 table-available' : 'bg-slate-700 border-2 border-red-500 table-occupied cursor-not-allowed'}`;
+                tableEl.innerHTML = `<div class="text-3xl font-bold">${table.name}</div><div class="text-sm text-slate-400">${table.capacity} seats</div><div class="mt-2 text-xs font-semibold uppercase px-2 py-1 rounded-full ${isAvailable ? 'bg-teal-500/20 text-teal-300' : 'bg-red-500/20 text-red-300'}">${table.status}</div>`;
+                if (isAvailable) { tableEl.onclick = () => selectTable(table.id); } else { tableEl.disabled = true; }
+                tableGrid.appendChild(tableEl);
+            });
+        }
+
+        function renderCategories() {
+            menuCategoriesContainer.innerHTML = '';
+            menuCategories.forEach(category => {
+                const categoryBtn = document.createElement('button');
+                categoryBtn.textContent = category.name;
+                categoryBtn.className = `px-4 py-2 rounded-lg font-semibold transition-colors ${activeCategory === category.id ? 'bg-teal-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`;
+                categoryBtn.onclick = () => { activeCategory = category.id; renderCategories(); renderMenuItems(); };
+                menuCategoriesContainer.appendChild(categoryBtn);
+            });
+        }
+
+        function renderMenuItems() {
+            menuItemsContainer.innerHTML = '';
+            menuItems[activeCategory].forEach(item => {
+                const itemCard = document.createElement('button');
+                itemCard.className = 'bg-slate-900 p-4 rounded-lg text-left hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500';
+                itemCard.onclick = () => addToOrder(item);
+                itemCard.innerHTML = `<h4 class="font-bold text-lg">${item.name}</h4><p class="text-teal-400 font-semibold">$${item.price.toFixed(2)}</p>`;
+                menuItemsContainer.appendChild(itemCard);
+            });
+        }
+
+        function showTableView() { orderView.classList.add('hidden'); tableView.classList.remove('hidden'); resetOrder(); }
+
+        function selectTable(tableId) {
+            selectedTable = tableId;
+            tableNumberDisplay.textContent = tables.find(t => t.id === tableId).name;
+            tableView.classList.add('hidden');
+            orderView.classList.remove('hidden'); orderView.classList.add('flex');
+        }
+
+        function addToOrder(item) {
+            const existingItem = currentOrder.find(orderItem => orderItem.id === item.id);
+            if (existingItem) { existingItem.quantity++; } else { currentOrder.push({ ...item, quantity: 1 }); }
+            renderOrder();
+        }
+
+        function changeQuantity(itemId, change) {
+            const item = currentOrder.find(orderItem => orderItem.id === itemId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) { currentOrder = currentOrder.filter(orderItem => orderItem.id !== itemId); }
+            }
+            renderOrder();
+        }
+        
+        function renderOrder() {
+            if (currentOrder.length === 0) {
+                orderItemsContainer.innerHTML = '<p class="text-slate-500 text-center py-10">No items added yet.</p>';
+                paymentButton.disabled = true;
+                upsellBtn.disabled = true;
+            } else {
+                orderItemsContainer.innerHTML = '';
+                currentOrder.forEach(item => {
+                    const orderItemEl = document.createElement('div');
+                    orderItemEl.className = 'flex items-center justify-between bg-slate-800 p-3 rounded-lg';
+                    orderItemEl.innerHTML = `<div><p class="font-semibold">${item.name}</p><p class="text-sm text-slate-400">$${item.price.toFixed(2)} each</p></div><div class="flex items-center space-x-3"><button onclick="changeQuantity(${item.id}, -1)" class="w-7 h-7 bg-slate-700 rounded-full hover:bg-red-500 transition-colors">-</button><span class="font-bold w-4 text-center">${item.quantity}</span><button onclick="changeQuantity(${item.id}, 1)" class="w-7 h-7 bg-slate-700 rounded-full hover:bg-teal-500 transition-colors">+</button></div><div class="font-bold w-20 text-right">$${(item.price * item.quantity).toFixed(2)}</div>`;
+                    orderItemsContainer.appendChild(orderItemEl);
+                });
+                paymentButton.disabled = false;
+                upsellBtn.disabled = false;
+            }
+            updateTotals();
+        }
+
+        function updateTotals() {
+            const subtotal = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.10;
+            const total = subtotal + tax;
+            subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+            taxEl.textContent = `$${tax.toFixed(2)}`;
+            totalEl.textContent = `$${total.toFixed(2)}`;
+        }
+        
+        function resetOrder() { currentOrder = []; selectedTable = null; renderOrder(); }
+
+        // --- AI Feature Functions ---
+        async function generateSpecials() {
+            specialsModal.classList.remove('hidden');
+            specialsContent.innerHTML = '<div class="flex justify-center items-center h-64"><div class="spinner"></div></div>';
+            
+            const prompt = "You are an expert chef and restaurant manager. Generate a creative list of 3 'Daily Specials' for a modern restaurant. For each special, provide a catchy name, a brief, enticing description (1-2 sentences), and a realistic price. Format the output clearly with headings for each special.";
+            const response = await callGemini(prompt);
+
+            if (response) {
+                // Basic markdown-like formatting for the response
+                const formattedResponse = response
+                    .replace(/\*\*(.*?)\*\*/g, '<h3 class="text-xl font-bold text-amber-300 mt-4 mb-1">$1</h3>') // Bold to h3
+                    .replace(/\n/g, '<br>');
+                specialsContent.innerHTML = `<div class="prose prose-invert max-w-none">${formattedResponse}</div>`;
+            } else {
+                specialsContent.innerHTML = '<p class="text-red-400 text-center">Failed to generate specials. Please try again later.</p>';
+            }
+        }
+
+        function closeSpecialsModal() {
+            specialsModal.classList.add('hidden');
+        }
+
+        async function getUpsellSuggestion() {
+            if (currentOrder.length === 0) return;
+            
+            upsellBtn.disabled = true;
+            upsellBtn.innerHTML = '<div class="spinner h-5 w-5 mx-auto border-t-white"></div>';
+
+            const itemNames = currentOrder.map(item => item.name).join(', ');
+            const prompt = `A customer has ordered the following items: ${itemNames}. Suggest a single, specific drink or food item that would be a great pairing or upsell. Be brief and direct in your suggestion. For example: "Consider adding a side of our truffle fries." or "A glass of Pinot Noir would pair perfectly with the steak."`;
+            
+            const suggestion = await callGemini(prompt);
+
+            if (suggestion) {
+                showMessage(suggestion, 'info');
+            } else {
+                showMessage("Could not get a suggestion at this time.");
+            }
+
+            upsellBtn.disabled = false;
+            upsellBtn.innerHTML = '✨ Suggest Pairing';
+        }
+
+        function showMessage(message, type = 'error') {
+            messageText.textContent = message;
+            messageBox.className = `fixed bottom-5 right-5 text-white py-3 px-5 rounded-lg shadow-lg z-50 ${type === 'error' ? 'bg-red-500' : 'bg-indigo-500'}`;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTables();
+            renderCategories();
+            renderMenuItems();
+        });
+    </script>
+</body>
+</html>

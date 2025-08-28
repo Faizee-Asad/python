@@ -100,3 +100,9 @@ del main.spec
 pyinstaller --onefile --add-data "pos_app\database\schema.sql;pos_app\database" main.py
 
 ```
+
+```
+UI Lib
+https://ttkbootstrap.readthedocs.io/en/latest/gettingstarted/tutorial/#choosing-a-theme
+https://customtkinter.tomschimansky.com/documentation/
+```
