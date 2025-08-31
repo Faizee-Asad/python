@@ -76,6 +76,35 @@ class SettingsScreen(ctk.CTkFrame):
                               fg_color=Style.DANGER, hover_color="#c92a2a",
                               command=lambda u_id=user['id'], u_name=user['username']: self._delete_user(u_id, u_name)).pack(side="right", padx=20)
 
+    # def _add_user(self):
+    #     dialog = ctk.CTkToplevel(self)
+    #     dialog.title("Add New User")
+    #     dialog.geometry("400x300")
+    #     dialog.configure(fg_color=Style.FRAME_BG)
+    #     dialog.transient(self)
+    #     dialog.grab_set()
+
+    #     ctk.CTkLabel(dialog, text="Add New User", font=Style.HEADER_FONT, text_color=Style.ACCENT).pack(pady=20)
+        
+    #     username_entry = ctk.CTkEntry(dialog, placeholder_text="Username", width=300)
+    #     username_entry.pack(pady=10)
+        
+    #     role_var = ctk.StringVar(value="Server")
+    #     role_menu = ctk.CTkOptionMenu(dialog, values=["Server", "Admin"], variable=role_var, width=300)
+    #     role_menu.pack(pady=10)
+        
+    #     def save():
+    #         username = username_entry.get().strip()
+    #         if username:
+    #             if self.db.add_user(username, role_var.get()):
+    #                 self.load_users()
+    #                 dialog.destroy()
+    #                 messagebox.showinfo("✅ Success", "User added successfully!")
+    #             else:
+    #                 messagebox.showerror("❌ Error", "Username already exists!", parent=dialog)
+        
+    #     ctk.CTkButton(dialog, text="💾 Save User", font=Style.BUTTON_FONT, fg_color=Style.SUCCESS, command=save).pack(pady=20)
+
     def _add_user(self):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Add New User")
@@ -89,22 +118,26 @@ class SettingsScreen(ctk.CTkFrame):
         username_entry = ctk.CTkEntry(dialog, placeholder_text="Username", width=300)
         username_entry.pack(pady=10)
         
-        role_var = ctk.StringVar(value="Server")
-        role_menu = ctk.CTkOptionMenu(dialog, values=["Server", "Admin"], variable=role_var, width=300)
+        role_var = ctk.StringVar(value="Staff")
+        role_menu = ctk.CTkOptionMenu(dialog, values=["Staff", "Admin"], variable=role_var, width=300)
         role_menu.pack(pady=10)
         
         def save():
             username = username_entry.get().strip()
             if username:
-                if self.db.add_user(username, role_var.get()):
+                # Pass the role value correctly
+                success, message = self.db.add_user(username, role_var.get())
+                if success:
                     self.load_users()
                     dialog.destroy()
                     messagebox.showinfo("✅ Success", "User added successfully!")
                 else:
-                    messagebox.showerror("❌ Error", "Username already exists!", parent=dialog)
+                    messagebox.showerror("❌ Error", message, parent=dialog)
+            else:
+                messagebox.showerror("❌ Error", "Username cannot be empty!", parent=dialog)
         
         ctk.CTkButton(dialog, text="💾 Save User", font=Style.BUTTON_FONT, fg_color=Style.SUCCESS, command=save).pack(pady=20)
-
+    
     def _delete_user(self, user_id, username):
         if messagebox.askyesno("🗑️ Delete User", f"Are you sure you want to delete user '{username}'?"):
             self.db.delete_user(user_id)

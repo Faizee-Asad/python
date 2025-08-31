@@ -105,26 +105,57 @@ class Database:
         self.conn.commit()
     
     # --- Users ---
+    # def get_users(self):
+    #     self.cursor.execute("SELECT * FROM users ORDER BY role DESC, username")
+    #     return [dict(row) for row in self.cursor.fetchall()]
+    
+    # def get_user_by_name(self, name):
+    #     self.cursor.execute("SELECT * FROM users WHERE username=?", (name,))
+    #     result = self.cursor.fetchone()
+    #     return dict(result) if result else None
+
+    # def add_user(self, username, role):
+    #     try:
+    #         self.cursor.execute("INSERT INTO users (username, role) VALUES (?, ?)", (username, role))
+    #         self.conn.commit()
+    #         return True
+    #     except sqlite3.IntegrityError: return False
+
+    # def delete_user(self, user_id):
+    #     self.cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
+    #     self.conn.commit()
+
     def get_users(self):
         self.cursor.execute("SELECT * FROM users ORDER BY role DESC, username")
         return [dict(row) for row in self.cursor.fetchall()]
-    
+
     def get_user_by_name(self, name):
-        self.cursor.execute("SELECT * FROM users WHERE username=?", (name,))
+        # Case-insensitive search
+        self.cursor.execute("SELECT * FROM users WHERE LOWER(username)=LOWER(?)", (name.strip(),))
         result = self.cursor.fetchone()
         return dict(result) if result else None
 
     def add_user(self, username, role):
         try:
-            self.cursor.execute("INSERT INTO users (username, role) VALUES (?, ?)", (username, role))
+            # Check if user already exists (case-insensitive)
+            existing = self.get_user_by_name(username)
+            if existing:
+                return False, f"Username '{username}' already exists!"
+            
+            # Insert the new user
+            self.cursor.execute("INSERT INTO users (username, role) VALUES (?, ?)", 
+                            (username.strip(), role))
             self.conn.commit()
-            return True
-        except sqlite3.IntegrityError: return False
+            return True, "User added successfully"
+        except sqlite3.IntegrityError as e:
+            return False, f"Database error: {str(e)}"
+        except Exception as e:
+            return False, f"Unexpected error: {str(e)}"
 
     def delete_user(self, user_id):
         self.cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
         self.conn.commit()
-        
+
     # --- Tables ---
     def get_tables(self):
         self.cursor.execute('''
