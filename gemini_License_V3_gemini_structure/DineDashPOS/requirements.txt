@@ -1,0 +1,6 @@
+customtkinter
+Pillow
+python-escpos
+openpyxl
+pandas
+matplotlib
