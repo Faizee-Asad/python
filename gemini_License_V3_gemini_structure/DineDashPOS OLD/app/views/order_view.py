@@ -7,7 +7,7 @@ from app.utils.image_manager import ImageManager
 
 # The printing library is optional and handled with a try-except block
 try:
-    from escpos.printer import Usb
+    from escpos.printer import Usb  
 except (ImportError, ModuleNotFoundError):
     Usb = None
 
@@ -184,7 +184,7 @@ class OrderScreen(ctk.CTkFrame):
         if not self.controller.current_order_id:
             return
         
-        self.db.add_item_to_order(self.controller.current_order_id, product['id'], 1, product['price'])
+        self.db.add_order_item(self.controller.current_order_id, product['id'], 1, product['price'])
         self.load_order_items(is_editable=True)
 
     def load_order_items(self, is_editable=True):
@@ -240,10 +240,20 @@ class OrderScreen(ctk.CTkFrame):
         
         self.current_order_details = {"items": order_items, "subtotal": subtotal, "tax": tax, "total": total}
 
-    def update_quantity(self, item_id, new_quantity):
-        self.db.update_order_item_quantity(item_id, new_quantity)
-        self.load_order_items(is_editable=True)
+    # def update_quantity(self, item_id, new_quantity):
+    #     self.db.update_order_item_quantity(item_id, new_quantity)
+    #     self.load_order_items(is_editable=True)
 
+    def update_quantity(self, item_id, new_quantity):
+        if new_quantity <= 0:
+            # Remove the item from the order
+            self.db.remove_order_item(item_id)
+        else:
+            # Update the quantity
+            self.db.update_order_item_quantity(item_id, new_quantity)
+        
+        self.load_order_items(is_editable=True)
+        
     def settle_order(self):
         if not self.controller.current_order_id or not self.current_order_details.get("items"):
             messagebox.showwarning("⚠️ Empty Order", "Cannot settle an empty order.")
@@ -312,7 +322,7 @@ class OrderScreen(ctk.CTkFrame):
         
         lines.append(f"Date: {details['timestamp']}")
         lines.append(f"Table: {details['table_name']}")
-        lines.pappend(f"Server: {details['user_name']}")
+        lines.append(f"Server: {details['user_name']}")
         lines.append("-" * 40)
         
         for item in details['items']:
