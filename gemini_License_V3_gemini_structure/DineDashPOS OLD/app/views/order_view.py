@@ -92,7 +92,7 @@ class OrderScreen(ctk.CTkFrame):
     def _create_total_row(self, parent, row, text, font=Style.BODY_FONT):
         ctk.CTkLabel(parent, text=text, font=font, text_color=Style.TEXT).grid(
             row=row, column=0, sticky="w", pady=5)
-        label = ctk.CTkLabel(parent, text="$0.00", font=font, text_color=Style.TEXT)
+        label = ctk.CTkLabel(parent, text="₹0.00", font=font, text_color=Style.TEXT)
         label.grid(row=row, column=1, sticky="e", pady=5)
         return label
 
@@ -167,7 +167,7 @@ class OrderScreen(ctk.CTkFrame):
             
             ctk.CTkLabel(product_card, text=product['name'], font=Style.BUTTON_FONT, 
                          text_color=Style.TEXT).pack(pady=(5, 2))
-            ctk.CTkLabel(product_card, text=f"${product['price']:.2f}", 
+            ctk.CTkLabel(product_card, text=f"₹{product['price']:.2f}", 
                          font=Style.HEADER_FONT, text_color=Style.ACCENT).pack(pady=(0, 10))
             
             add_btn = ctk.CTkButton(product_card, text="+ Add to Order",
@@ -210,7 +210,7 @@ class OrderScreen(ctk.CTkFrame):
             
             ctk.CTkLabel(details_frame, text=item['product_name'], 
                          font=Style.BUTTON_FONT, text_color=Style.TEXT).pack(anchor="w")
-            ctk.CTkLabel(details_frame, text=f"${item['price_at_time']:.2f} × {item['quantity']} = ${item['price_at_time'] * item['quantity']:.2f}", 
+            ctk.CTkLabel(details_frame, text=f"₹{item['price_at_time']:.2f} × {item['quantity']} = ₹{item['price_at_time'] * item['quantity']:.2f}", 
                          font=Style.SMALL_FONT, text_color=Style.TEXT_MUTED).pack(anchor="w")
             
             if is_editable:
@@ -234,9 +234,9 @@ class OrderScreen(ctk.CTkFrame):
         tax = subtotal * 0.10
         total = subtotal + tax
         
-        self.subtotal_label.configure(text=f"${subtotal:.2f}")
-        self.tax_label.configure(text=f"${tax:.2f}")
-        self.total_label.configure(text=f"${total:.2f}")
+        self.subtotal_label.configure(text=f"₹{subtotal:.2f}")
+        self.tax_label.configure(text=f"₹{tax:.2f}")
+        self.total_label.configure(text=f"₹{total:.2f}")
         
         self.current_order_details = {"items": order_items, "subtotal": subtotal, "tax": tax, "total": total}
 
@@ -253,13 +253,13 @@ class OrderScreen(ctk.CTkFrame):
             self.db.update_order_item_quantity(item_id, new_quantity)
         
         self.load_order_items(is_editable=True)
-        
+
     def settle_order(self):
         if not self.controller.current_order_id or not self.current_order_details.get("items"):
             messagebox.showwarning("⚠️ Empty Order", "Cannot settle an empty order.")
             return
         
-        if messagebox.askyesno("💳 Confirm Payment", f"Settle order for ${self.current_order_details['total']:.2f}?"):
+        if messagebox.askyesno("💳 Confirm Payment", f"Settle order for ₹{self.current_order_details['total']:.2f}?"):
             self.db.close_order(self.controller.current_order_id)
             self._set_post_payment_state()
             messagebox.showinfo("✅ Success", "Order settled successfully! You can now print the receipt.")
@@ -312,7 +312,7 @@ class OrderScreen(ctk.CTkFrame):
     def _format_receipt(self, details, is_reprint=False):
         lines = []
         lines.append("=" * 40)
-        lines.append("          DINEDASH RESTAURANT")
+        lines.append("        IQBAL ZAIKA RESTAURANT")
         lines.append("       Premium Dining Experience")
         lines.append("=" * 40)
         
@@ -322,21 +322,21 @@ class OrderScreen(ctk.CTkFrame):
         
         lines.append(f"Date: {details['timestamp']}")
         lines.append(f"Table: {details['table_name']}")
-        lines.append(f"Server: {details['user_name']}")
+        lines.append(f"Staff: {details['user_name']}")
         lines.append("-" * 40)
         
         for item in details['items']:
             name = item['product_name'][:20].ljust(20)
             qty = str(item['quantity']).rjust(3)
-            price = f"${item['price_at_time']:.2f}".rjust(7)
-            total = f"${item['price_at_time'] * item['quantity']:.2f}".rjust(8)
+            price = f"₹{item['price_at_time']:.2f}".rjust(7)
+            total = f"₹{item['price_at_time'] * item['quantity']:.2f}".rjust(8)
             lines.append(f"{name} {qty} {price} {total}")
         
         lines.append("-" * 40)
-        lines.append(f"Subtotal: ${details['subtotal']:.2f}".rjust(40))
-        lines.append(f"Tax (10%): ${details['tax']:.2f}".rjust(40))
+        lines.append(f"Subtotal: ₹{details['subtotal']:.2f}".rjust(40))
+        lines.append(f"Tax (10%): ₹{details['tax']:.2f}".rjust(40))
         lines.append("=" * 40)
-        lines.append(f"TOTAL: ${details['total']:.2f}".rjust(40))
+        lines.append(f"TOTAL: ₹{details['total']:.2f}".rjust(40))
         lines.append("=" * 40)
         lines.append("")
         lines.append("      Thank you for dining with us!")

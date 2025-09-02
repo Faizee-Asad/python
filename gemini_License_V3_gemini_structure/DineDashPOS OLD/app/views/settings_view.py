@@ -268,7 +268,7 @@ class SettingsScreen(ctk.CTkFrame):
                 
                 ctk.CTkLabel(info_frame, text=product['name'], 
                              font=Style.BUTTON_FONT, text_color=Style.TEXT).pack(anchor="w")
-                ctk.CTkLabel(info_frame, text=f"${product['price']:.2f}", 
+                ctk.CTkLabel(info_frame, text=f"₹{product['price']:.2f}", 
                              font=Style.SMALL_FONT, text_color=Style.ACCENT).pack(anchor="w")
                 
                 actions_frame = ctk.CTkFrame(product_card, fg_color="transparent")
